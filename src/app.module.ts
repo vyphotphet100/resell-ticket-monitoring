@@ -11,5 +11,5 @@ import { DiscordModule } from './modules/discord/discord-module';
 export class AppModule {}
 
 export class StaticCache {
-  public static cache: {} = {};
+  public static cache: { [key: string]: any } = {};
 }

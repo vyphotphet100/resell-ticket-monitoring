@@ -1,4 +1,13 @@
-import { Controller, Get, Inject, Logger, forwardRef } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Logger,
+  Post,
+  Query,
+  forwardRef,
+} from '@nestjs/common';
 import { Channel, Client, TextChannel } from 'discord.js';
 import { format } from 'date-fns';
 import { StaticCache } from 'src/app.module';
@@ -21,7 +30,7 @@ export class DiscordController {
       let buildLock = StaticCache.cache['BUILD_LOCK'];
       if (
         buildLock &&
-        buildLock.value === 'true' &&
+        buildLock.value === true &&
         Math.floor(
           ((new Date().getTime() - buildLock.createdAt.getTime()) %
             (1000 * 60 * 60)) /
@@ -78,7 +87,29 @@ export class DiscordController {
     }
   }
 
-  async devSendDiscordMessage(data) {
+  @Get('/send-message')
+  async sendMessage(@Query('message') message: string) {
+    try {
+      const channel = this.discordClient.channel;
+      if (!channel) {
+        Logger.error('[Resell Ticket Monitoring Bot]: Cannot get channel');
+        return false;
+      }
+
+      const moment = new Date();
+      moment.setHours(moment.getHours() + 7);
+      (channel as TextChannel).send(
+        `- [${format(moment, 'HH:mm dd/MM/yyyy')}] ${message}`,
+      );
+      return true;
+    } catch (e) {
+      Logger.error(e);
+      return false;
+    }
+  }
+
+  @Post('/send-build-message')
+  async devSendDiscordMessage(@Body() data: any) {
     try {
       const channel = this.discordClient.channel;
       if (!channel) {
